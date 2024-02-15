@@ -1,0 +1,9 @@
+\begin{table}[{{ cfg.position or '' }}]
+{% if cfg.centering %}
+\centering
+{% endif %}
+{% if cfg.caption %}
+\caption{ {{-cfg.caption-}} }
+{% endif %}
+{{inner_table_env}}
+\end{table}

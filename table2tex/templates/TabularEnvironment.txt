@@ -1,0 +1,3 @@
+\begin{tabular}{ {{-cfg.collayout-}} }
+{{data_env}}
+\end{tabular}
