@@ -1,38 +1,31 @@
-import pandas as pd
+from pathlib import Path
+
 from jinja2 import Environment, PackageLoader
 
-from table2tex.data import DataEnvironment, DataEnvironmentConfig
-from table2tex.inner_table import TabularEnvironment, TabularEnvironmentConfig
-from table2tex.outer_table import TableEnvironment, TableEnvironmentConfig
-
-loader = PackageLoader("table2tex")
-env = Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
-
-
-df = pd.DataFrame(
-    {
-        0: [
-            "Abbreviations",
-            "LP",
-            "MILP",
-            "SP",
-            "PTDF",
-        ],
-        1: [
-            "Description",
-            "Linear program",
-            "Mixed integer linear program",
-            "Support point",
-            "Power Transfer Distribution Factor",
-        ],
-    }
+from table2tex.data import DataEnvironment
+from table2tex.inner_table import TabularEnvironment
+from table2tex.io import read
+from table2tex.outer_table import TableEnvironment
+from table2tex.setting import (
+    DataEnvironmentConfig,
+    TableEnvironmentConfig,
+    TabularEnvironmentConfig,
 )
 
+path = Path("data.xlsx")
+
+
 if __name__ == "__main__":
-    data_cfg = DataEnvironmentConfig(add_hline=True)
-    tab_cfg = TabularEnvironmentConfig(collayout="ll")
-    table_cfg = TableEnvironmentConfig(position="htb", caption="Test caption")
-    data_env = DataEnvironment(data_cfg, df)
+    loader = PackageLoader("table2tex")
+    env = Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
+
+    data_cfg = DataEnvironmentConfig()
+    tab_cfg = TabularEnvironmentConfig()
+    table_cfg = TableEnvironmentConfig()
+
+    cfg_from_file, data = read(path)
+
+    data_env = DataEnvironment(data_cfg, data)
     tab_env = TabularEnvironment(
         tab_cfg, data_env, env.get_template("TabularEnvironment.txt")
     )
