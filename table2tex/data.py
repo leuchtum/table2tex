@@ -1,13 +1,23 @@
 from dataclasses import dataclass
+from typing import Protocol
 
 import pandas as pd
 
-from table2tex.setting import DataEnvironmentConfig
+
+class _Config(Protocol):
+    add_hline: bool
+    add_toprule: bool
+    add_bottomrule: bool
+    add_midrule_after_rows: list[int]
+    bf_rows: list[int]
+    bf_cols: list[int]
+    highlight_rows: list[int]
+    highlight_color: str
 
 
 @dataclass()
 class DataEnvironment:
-    cfg: DataEnvironmentConfig
+    cfg: _Config
     data: pd.DataFrame
 
     def _parse_cell(self, row_idx: int, col_idx: int, value: str) -> str:
@@ -22,7 +32,7 @@ class DataEnvironment:
         if self.cfg.add_toprule and row_idx == 0:
             buf.append("\\toprule\n")
         if row_idx in self.cfg.highlight_rows:
-            buf.append("\\rowcolor[HTML]{" + self.cfg.highlight_colour + "}\n")
+            buf.append("\\rowcolor[HTML]{" + self.cfg.highlight_color + "}\n")
         return "".join(buf)
 
     def _parse_row_suffix(self, row_idx: int) -> str:

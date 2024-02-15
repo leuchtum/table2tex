@@ -1,37 +1,45 @@
 from pathlib import Path
 
+import pandas as pd
 from jinja2 import Environment, PackageLoader
 
 from table2tex.data import DataEnvironment
 from table2tex.inner_table import TabularEnvironment
 from table2tex.io import read
 from table2tex.outer_table import TableEnvironment
-from table2tex.setting import (
-    DataEnvironmentConfig,
-    TableEnvironmentConfig,
-    TabularEnvironmentConfig,
-)
+from table2tex.setting import Setting
 
 path = Path("data.xlsx")
 
 
-if __name__ == "__main__":
-    loader = PackageLoader("table2tex")
-    env = Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
+def check_coherence(setting: Setting, data: pd.DataFrame) -> None:
+    if len(setting.columnlayout.replace("|", "")) != data.shape[1]:
+        raise ValueError("Column layout does not match number of columns")
 
-    data_cfg = DataEnvironmentConfig()
-    tab_cfg = TabularEnvironmentConfig()
-    table_cfg = TableEnvironmentConfig()
+
+def main() -> None:
+    env = Environment(
+        loader=PackageLoader("table2tex"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
 
     cfg_from_file, data = read(path)
 
-    data_env = DataEnvironment(data_cfg, data)
-    tab_env = TabularEnvironment(
-        tab_cfg, data_env, env.get_template("TabularEnvironment.txt")
-    )
-    table_env = TableEnvironment(
-        table_cfg, tab_env, env.get_template("TableEnvironment.txt")
-    )
+    setting = Setting.model_validate(cfg_from_file)
 
-    # print(data)
+    check_coherence(setting, data)
+
+    data_env = DataEnvironment(setting, data)
+
+    tab_template = env.get_template("TabularEnvironment.txt")
+    tab_env = TabularEnvironment(setting, data_env, tab_template)
+
+    table_template = env.get_template("TableEnvironment.txt")
+    table_env = TableEnvironment(setting, tab_env, table_template)
+
     print(table_env)
+
+
+if __name__ == "__main__":
+    main()

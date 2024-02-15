@@ -1,14 +1,18 @@
 from dataclasses import dataclass
+from typing import Protocol
 
 from jinja2 import Template
 
 from table2tex.data import DataEnvironment
-from table2tex.setting import TabularEnvironmentConfig
+
+
+class _Config(Protocol):
+    collayout: str = ""
 
 
 @dataclass()
 class TabularEnvironment:
-    cfg: TabularEnvironmentConfig
+    cfg: _Config
     data_env: DataEnvironment
     template: Template
 
