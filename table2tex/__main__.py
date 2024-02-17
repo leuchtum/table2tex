@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pandas as pd
 from jinja2 import Environment, PackageLoader
 from pydantic import BaseModel, Field
 
@@ -19,10 +20,17 @@ class GlobalConfig(BaseModel):
     tabular: TabularConfig = Field(default_factory=lambda: TabularConfig())
 
 
+def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
+    if len(cfg.tabular.columnlayout.replace("|", "")) != data.shape[1]:
+        raise ValueError("Column layout does not match data shape")
+
+
 def main() -> None:
     cfg_from_file, data = read(path)
 
     cfg = GlobalConfig.model_validate(cfg_from_file)
+
+    check_coherence(cfg, data)
 
     templates = Environment(
         loader=PackageLoader("table2tex"),
