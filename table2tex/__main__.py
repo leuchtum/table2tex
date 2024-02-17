@@ -18,27 +18,28 @@ def check_coherence(setting: Setting, data: pd.DataFrame) -> None:
 
 
 def main() -> None:
-    env = Environment(
-        loader=PackageLoader("table2tex"),
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
-
     cfg_from_file, data = read(path)
 
     setting = Setting.model_validate(cfg_from_file)
 
     check_coherence(setting, data)
 
+    templates = Environment(
+        loader=PackageLoader("table2tex"),
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
+
     data_env = DataEnvironment(setting, data)
 
-    tab_template = env.get_template("TabularEnvironment.txt")
+    tab_template = templates.get_template("TabularEnvironment.txt")
     tab_env = TabularEnvironment(setting, data_env, tab_template)
 
-    table_template = env.get_template("TableEnvironment.txt")
+    table_template = templates.get_template("TableEnvironment.txt")
     table_env = TableEnvironment(setting, tab_env, table_template)
 
-    print(table_env)
+    parsed = str(table_env)
+    print(parsed)
 
 
 if __name__ == "__main__":
