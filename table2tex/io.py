@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+import tomllib
 
 
 def _read_csv(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
@@ -10,8 +11,8 @@ def _read_csv(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
 def _parse_cfg_sheet(cfg_sheet: pd.DataFrame) -> dict[str, str]:
     if cfg_sheet.shape[1] != 2:
         raise ValueError("Invalid configuration sheet")
-    cfg_sheet = cfg_sheet.set_index(0, drop=True)
-    cfg = cfg_sheet[1].to_dict()
+    cfg_string = "\n".join(["=".join(row) for _, row in cfg_sheet.iterrows()])
+    cfg = tomllib.loads(cfg_string)
     return cfg
 
 

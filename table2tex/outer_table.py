@@ -1,20 +1,21 @@
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Optional
 
 from jinja2 import Template
+from pydantic import BaseModel
 
 from table2tex.inner_table import TabularEnvironment
 
 
-class _Config(Protocol):
-    position: str | None = None
-    caption: str | None = None
-    centering: bool = True
+class TableConfig(BaseModel):
+    caption: Optional[str] = None
+    centering: Optional[bool] = None
+    position: str = "htbp"
 
 
 @dataclass()
 class TableEnvironment:
-    cfg: _Config
+    cfg: TableConfig
     inner_table_env: TabularEnvironment
     template: Template
 

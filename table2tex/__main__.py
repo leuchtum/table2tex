@@ -1,28 +1,30 @@
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 from jinja2 import Environment, PackageLoader
+from pydantic import BaseModel, Field
 
-from table2tex.data import DataEnvironment
-from table2tex.inner_table import TabularEnvironment
+from table2tex.data import CellConfig, ColConfig, DataEnvironment, RowConfig
+from table2tex.inner_table import TabularConfig, TabularEnvironment
 from table2tex.io import read
-from table2tex.outer_table import TableEnvironment
-from table2tex.setting import Setting
+from table2tex.outer_table import TableConfig, TableEnvironment
 
 path = Path("data.xlsx")
 
 
-def check_coherence(setting: Setting, data: pd.DataFrame) -> None:
-    if len(setting.columnlayout.replace("|", "")) != data.shape[1]:
-        raise ValueError("Column layout does not match number of columns")
+class GlobalConfig(BaseModel):
+    row: dict[int, RowConfig] = Field(default_factory=dict)
+    col: dict[int, ColConfig] = Field(default_factory=dict)
+    cell: dict[tuple[int, int], CellConfig] = Field(default_factory=dict)
+    table: TableConfig = Field(default_factory=TableConfig)
+    tabular: TabularConfig = Field(default_factory=TabularConfig)
 
 
 def main() -> None:
     cfg_from_file, data = read(path)
 
-    setting = Setting.model_validate(cfg_from_file)
-
-    check_coherence(setting, data)
+    cfg = GlobalConfig.model_validate(cfg_from_file)
 
     templates = Environment(
         loader=PackageLoader("table2tex"),
@@ -30,13 +32,18 @@ def main() -> None:
         lstrip_blocks=True,
     )
 
-    data_env = DataEnvironment(setting, data)
+    data_env = DataEnvironment(
+        cell_cfgs=cfg.cell,
+        row_cfgs=cfg.row,
+        col_cfgs=cfg.col,
+        data=data,
+    )
 
     tab_template = templates.get_template("TabularEnvironment.txt")
-    tab_env = TabularEnvironment(setting, data_env, tab_template)
+    tab_env = TabularEnvironment(cfg.tabular, data_env, tab_template)
 
     table_template = templates.get_template("TableEnvironment.txt")
-    table_env = TableEnvironment(setting, tab_env, table_template)
+    table_env = TableEnvironment(cfg.table, tab_env, table_template)
 
     parsed = str(table_env)
     print(parsed)

@@ -1,18 +1,18 @@
 from dataclasses import dataclass
-from typing import Protocol
 
 from jinja2 import Template
+from pydantic import BaseModel
 
 from table2tex.data import DataEnvironment
 
 
-class _Config(Protocol):
-    columnlayout: str = ""
+class TabularConfig(BaseModel):
+    columnlayout: str
 
 
 @dataclass()
 class TabularEnvironment:
-    cfg: _Config
+    cfg: TabularConfig
     data_env: DataEnvironment
     template: Template
 
