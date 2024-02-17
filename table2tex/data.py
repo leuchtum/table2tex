@@ -76,7 +76,7 @@ def _build_hline_mask(
 
 
 @dataclass(kw_only=True)
-class DataEnvironment:
+class DataEnv:
     cell_cfgs: dict[tuple[int, int], CellConfig] = field(default_factory=dict)
     row_cfgs: dict[int, RowConfig] = field(default_factory=dict)
     col_cfgs: dict[int, ColConfig] = field(default_factory=dict)

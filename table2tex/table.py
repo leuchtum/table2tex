@@ -3,17 +3,17 @@ from dataclasses import dataclass
 from jinja2 import Template
 from pydantic import BaseModel
 
-from table2tex.data import DataEnvironment
+from table2tex.data import DataEnv
 
 
-class TabularConfig(BaseModel):
+class TableConfig(BaseModel):
     columnlayout: str = ""
 
 
 @dataclass()
-class TabularEnvironment:
-    cfg: TabularConfig
-    data_env: DataEnvironment
+class TableTabularEnv:
+    cfg: TableConfig
+    data_env: DataEnv
     template: Template
 
     def __str__(self) -> str:

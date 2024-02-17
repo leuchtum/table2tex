@@ -8,5 +8,5 @@
 {% if cfg.caption %}
 \caption{ {{-cfg.caption-}} }
 {% endif %}
-{{inner_table_env}}
+{{table_env}}
 \end{table}

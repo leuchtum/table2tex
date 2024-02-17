@@ -4,10 +4,10 @@ from typing import Optional
 from jinja2 import Template
 from pydantic import BaseModel
 
-from table2tex.inner_table import TabularEnvironment
+from table2tex.table import TableTabularEnv
 
 
-class TableConfig(BaseModel):
+class PositioningConfig(BaseModel):
     caption: Optional[str] = None
     label: Optional[str] = None
     centering: Optional[bool] = None
@@ -15,9 +15,9 @@ class TableConfig(BaseModel):
 
 
 @dataclass()
-class TableEnvironment:
-    cfg: TableConfig
-    inner_table_env: TabularEnvironment
+class PositioningTableEnv:
+    cfg: PositioningConfig
+    table_env: TableTabularEnv
     template: Template
 
     def __str__(self):

@@ -5,7 +5,7 @@ from typing import Protocol
 
 from jinja2 import Template
 
-from table2tex.outer_table import TableEnvironment
+from table2tex.positioning import PositioningTableEnv
 
 
 class _CfgWithNeededAttr(Protocol):
@@ -15,9 +15,9 @@ class _CfgWithNeededAttr(Protocol):
 
 
 @dataclass()
-class GlobalEnvironment:
+class SuperiorEnv:
     cfg: _CfgWithNeededAttr
-    outer_table_env: TableEnvironment
+    pos_env: PositioningTableEnv
     template: Template
 
     @property

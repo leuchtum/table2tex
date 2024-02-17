@@ -7,11 +7,11 @@ from jinja2 import Environment, PackageLoader, StrictUndefined
 from pydantic import BaseModel, Field
 
 from table2tex import __version__
-from table2tex.data import CellConfig, ColConfig, DataEnvironment, RowConfig
-from table2tex.global_table import GlobalEnvironment
-from table2tex.inner_table import TabularConfig, TabularEnvironment
+from table2tex.data import CellConfig, ColConfig, DataEnv, RowConfig
 from table2tex.io import read
-from table2tex.outer_table import TableConfig, TableEnvironment
+from table2tex.positioning import PositioningConfig, PositioningTableEnv
+from table2tex.superior import SuperiorEnv
+from table2tex.table import TableConfig, TableTabularEnv
 
 path = Path("data.xlsx")
 
@@ -25,8 +25,8 @@ class GlobalConfig(BaseModel):
     row: dict[int, RowConfig] = Field(default_factory=dict)
     col: dict[int, ColConfig] = Field(default_factory=dict)
     cell: dict[tuple[int, int], CellConfig] = Field(default_factory=dict)
-    table: TableConfig = Field(default_factory=lambda: TableConfig())
-    tabular: TabularConfig = Field(default_factory=lambda: TabularConfig())
+    table: PositioningConfig = Field(default_factory=lambda: PositioningConfig())
+    tabular: TableConfig = Field(default_factory=lambda: TableConfig())
 
 
 def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
@@ -62,23 +62,23 @@ def main(
         undefined=StrictUndefined,
     )
 
-    data_env = DataEnvironment(
+    data_env = DataEnv(
         cell_cfgs=cfg.cell,
         row_cfgs=cfg.row,
         col_cfgs=cfg.col,
         data=data,
     )
 
-    tab_template = templates.get_template("TabularEnvironment.txt")
-    tab_env = TabularEnvironment(cfg.tabular, data_env, tab_template)
+    table_template = templates.get_template("table_tabular.txt")
+    table_env = TableTabularEnv(cfg.tabular, data_env, table_template)
 
-    table_template = templates.get_template("TableEnvironment.txt")
-    table_env = TableEnvironment(cfg.table, tab_env, table_template)
+    pos_template = templates.get_template("positioning_table.txt")
+    pos_env = PositioningTableEnv(cfg.table, table_env, pos_template)
 
-    global_template = templates.get_template("GlobalEnvironment.txt")
-    global_env = GlobalEnvironment(cfg, table_env, global_template)
+    superior_template = templates.get_template("superior.txt")
+    superior_env = SuperiorEnv(cfg, pos_env, superior_template)
 
-    parsed = str(global_env)
+    parsed = str(superior_env)
     print(parsed)
 
 
