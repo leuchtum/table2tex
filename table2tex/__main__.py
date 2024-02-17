@@ -1,67 +1,18 @@
 import sys
 from itertools import product
 from pathlib import Path
-from typing import Optional
 
 import click
 import pandas as pd
 from jinja2 import Environment as JinjaEnv
 from jinja2 import PackageLoader, StrictUndefined
-from pydantic import Field
 
-from table2tex import __version__
+from table2tex.configs import GlobalConfig
 from table2tex.data import DataEnv
 from table2tex.io import read
-from table2tex.configs import (
-    CellConfig,
-    ColConfig,
-    PositioningConfig,
-    RowConfig,
-    StrictModel,
-    TableConfig,
-)
 from table2tex.positioning import PositioningTableEnv
 from table2tex.superior import SuperiorEnv
 from table2tex.table import TableTabularEnv
-
-
-class GlobalConfig(StrictModel):
-    # Set automatically
-    version: str = __version__
-    # Non user defined
-    source_file: Path
-    # User defined
-    columnlayout: str
-    position: str = "htbp"
-    row: dict[int, RowConfig] = Field(default_factory=dict)
-    col: dict[int, ColConfig] = Field(default_factory=dict)
-    cell: dict[int, dict[int, CellConfig]] = Field(default_factory=dict)
-    caption: Optional[str] = None
-    label: Optional[str] = None
-    centering: Optional[bool] = None
-    show_info: bool = True
-
-    def produce_table_cfg(self) -> TableConfig:
-        return TableConfig(columnlayout=self.columnlayout)
-
-    def produce_positioning_cfg(self) -> PositioningConfig:
-        return PositioningConfig(
-            caption=self.caption,
-            label=self.label,
-            centering=self.centering,
-            position=self.position,
-        )
-
-    def produce_row_cfgs(self) -> dict[int, RowConfig]:
-        return self.row
-
-    def produce_col_cfgs(self) -> dict[int, ColConfig]:
-        return self.col
-
-    def produce_cell_cfgs(self) -> dict[tuple[int, int], CellConfig]:
-        return {
-            (i, j): cell for i, inner in self.cell.items() for j, cell in inner.items()
-        }
 
 
 def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
@@ -84,8 +35,17 @@ def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
 
 
 @click.command()
-@click.option("--config", type=click.Path(exists=True, path_type=Path), multiple=True)
-@click.argument("path", type=click.Path(exists=True, path_type=Path), nargs=1)
+@click.option(
+    "--config-file",
+    "config_files",
+    type=click.Path(exists=True, path_type=Path),
+    multiple=True,
+)
+@click.argument(
+    "source_file",
+    type=click.Path(exists=True, path_type=Path),
+    nargs=1,
+)
 def cli(config_files: tuple[Path, ...], source_file: Path) -> None:
     if config_files:
         raise NotImplementedError("Config files not yet supported")
