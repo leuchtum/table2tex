@@ -7,7 +7,7 @@ from table2tex.data import DataEnvironment
 
 
 class TabularConfig(BaseModel):
-    columnlayout: str
+    columnlayout: str = ""
 
 
 @dataclass()

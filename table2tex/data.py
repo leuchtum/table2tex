@@ -1,19 +1,18 @@
 from dataclasses import dataclass, field
 from itertools import product
-from typing import Optional, Protocol
+from typing import Mapping, Optional, Protocol
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from pydantic import BaseModel
 
 
-@dataclass(kw_only=True)
-class CellConfig:
+class CellConfig(BaseModel):
     textbf: Optional[bool] = None
 
 
-@dataclass(kw_only=True)
-class RowConfig:
+class RowConfig(BaseModel):
     hline_above: Optional[bool] = None
     hline_below: Optional[bool] = None
     toprule_above: Optional[bool] = None
@@ -25,8 +24,7 @@ class RowConfig:
     textbf: Optional[bool] = None
 
 
-@dataclass(kw_only=True)
-class ColConfig:
+class ColConfig(BaseModel):
     textbf: Optional[bool] = None
 
 
@@ -36,9 +34,9 @@ class _HasTextBfAttr(Protocol):
 
 def _build_textbf_mask(
     shape: tuple[int, int],
-    cell_cfgs: dict[tuple[int, int], _HasTextBfAttr],
-    row_cfgs: dict[int, _HasTextBfAttr],
-    col_cfgs: dict[int, _HasTextBfAttr],
+    cell_cfgs: Mapping[tuple[int, int], _HasTextBfAttr],
+    row_cfgs: Mapping[int, _HasTextBfAttr],
+    col_cfgs: Mapping[int, _HasTextBfAttr],
 ) -> npt.NDArray[np.bool_]:
     mask = np.zeros(shape=shape, dtype=bool)
     for i, j in product(range(shape[0]), range(shape[1])):
@@ -66,7 +64,7 @@ class _HasHLineAttr(Protocol):
 
 def _build_hline_mask(
     shape: tuple[int, int],
-    row_cfgs: dict[int, _HasHLineAttr],
+    row_cfgs: Mapping[int, _HasHLineAttr],
 ) -> tuple[npt.NDArray[np.bool_], npt.NDArray[np.bool_]]:
     before_mask = np.zeros(shape[0], dtype=bool)
     after_mask = np.zeros(shape[0], dtype=bool)

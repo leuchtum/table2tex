@@ -17,8 +17,8 @@ class GlobalConfig(BaseModel):
     row: dict[int, RowConfig] = Field(default_factory=dict)
     col: dict[int, ColConfig] = Field(default_factory=dict)
     cell: dict[tuple[int, int], CellConfig] = Field(default_factory=dict)
-    table: TableConfig = Field(default_factory=TableConfig)
-    tabular: TabularConfig = Field(default_factory=TabularConfig)
+    table: TableConfig = Field(default_factory=lambda: TableConfig())
+    tabular: TabularConfig = Field(default_factory=lambda: TabularConfig())
 
 
 def main() -> None:
