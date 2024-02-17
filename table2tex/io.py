@@ -34,7 +34,7 @@ def _read_xlsx(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
     return _parse_cfg_sheet(cfg_sheet), _parse_data_sheet(data_sheet)
 
 
-def read(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
+def read_data(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
     match path.suffix:
         case ".csv":
             return _read_csv(path)
@@ -42,3 +42,8 @@ def read(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
             return _read_xlsx(path)
         case _:
             raise ValueError("Unsupported file type")
+
+
+def read_config(path: Path) -> dict[str, str]:
+    with open(path, "rb") as f:
+        return tomllib.load(f)

@@ -45,12 +45,11 @@ class TableConfig:
 
 
 class GlobalConfig(StrictModel):
-    # Set automatically
-    version: str = __version__
     # Non user defined
-    source_file: Path
+    version: str = __version__
+    sources: list[Path] = Field(default_factory=dict)
     # User defined
-    columnlayout: str
+    columnlayout: str = ""
     position: str = "htbp"
     row: dict[int, RowConfig] = Field(default_factory=dict)
     col: dict[int, ColConfig] = Field(default_factory=dict)
