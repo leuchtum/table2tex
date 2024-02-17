@@ -40,6 +40,12 @@ def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
 
 
 @click.command()
+@click.version_option(prog_name="table2tex")
+@click.option(
+    "--to-stdout",
+    is_flag=True,
+    help="Print the output to stdout instead of a file",
+)
 @click.option(
     "-c",
     "--config",
@@ -52,21 +58,25 @@ def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
     type=click.Path(exists=True, path_type=Path),
     nargs=-1,
 )
-def cli(cfg_files: list[Path], source_files: list[Path]) -> None:
-    multi_main(cfg_files, source_files)
+def cli(cfg_files: list[Path], source_files: list[Path], to_stdout: bool) -> None:
+    file_handling(cfg_files, source_files, to_stdout)
 
 
-def multi_main(cfg_files: list[Path], source_files: list[Path]) -> None:
+def file_handling(
+    cfg_files: list[Path], source_files: list[Path], to_stdout: bool
+) -> None:
     cfg_c = [read_config(path) for path in cfg_files]
     for source_file in source_files:
         cfg_s, data = read_data(source_file)
-        main([*cfg_c, cfg_s], [*cfg_files, source_file], data)
+        output = None if to_stdout else Path(f"{source_file.stem}.tex")
+        main([*cfg_c, cfg_s], [*cfg_files, source_file], data, output)
 
 
 def main(
     cfgs: list[dict[str, str]],
     sources: list[Path],
     data: pd.DataFrame,
+    output: Path | None = None,
 ) -> None:
     # Merge all the configurations
     buf: dict[Any, Any] = {"sources": sources}
@@ -101,7 +111,12 @@ def main(
     superior_env = SuperiorEnv(config, pos_env, superior_tpl)
 
     parsed = str(superior_env)
-    print(parsed)
+
+    if output is None:
+        print(parsed)
+    else:
+        with open(output, "w") as f:
+            f.write(parsed)
 
 
 if __name__ == "__main__":
