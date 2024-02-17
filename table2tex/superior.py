@@ -3,13 +3,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Protocol
 
+import pandas as pd
 from jinja2 import Template
 
 
 class _Cfg(Protocol):
     show_info: bool
     version: str
-    source_file: Path
+    sources: list[Path]
 
 
 class _Env(Protocol):
@@ -24,15 +25,27 @@ class SuperiorEnv:
     template: Template
 
     def __str__(self) -> str:
-        as_float = self.cfg.source_file.stat().st_mtime
-        as_utc = datetime.fromtimestamp(as_float, tz=timezone.utc)
-        as_local = as_utc.astimezone()
-        as_string = as_local.isoformat()
+        def path_to_string(path: Path) -> str:
+            return path.resolve().as_posix()
 
+        def path_to_mtime_string(path: Path) -> str:
+            as_float = path.stat().st_mtime
+            as_utc = datetime.fromtimestamp(as_float, tz=timezone.utc)
+            as_local = as_utc.astimezone()
+            return as_local.isoformat()
+
+        sources = [path_to_string(path) for path in self.cfg.sources]
+        mtimes = [path_to_mtime_string(path) for path in self.cfg.sources]
+        source_table = pd.DataFrame(
+            {
+                "%": ["%" for _ in sources],
+                "SOURCE": sources,
+                "MODIFICATION TIME": mtimes,
+            },
+        ).to_string(index=False)
         return self.template.render(
             {
                 **self.__dict__,
-                "source_file": self.cfg.source_file.resolve(),
-                "source_file_mtime": as_string,
+                "source_table": source_table,
             }
         )
