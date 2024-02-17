@@ -1,19 +1,22 @@
 from dataclasses import dataclass
+from typing import Protocol
 
 from jinja2 import Template
 
-from table2tex.data import DataEnv
 
-
-@dataclass()
-class TableConfig:
+class _Cfg(Protocol):
     columnlayout: str
+
+
+class _Env(Protocol):
+    def __str__(self) -> str:
+        ...
 
 
 @dataclass()
 class TableTabularEnv:
-    cfg: TableConfig
-    data_env: DataEnv
+    cfg: _Cfg
+    data_env: _Env
     template: Template
 
     def __str__(self) -> str:

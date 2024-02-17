@@ -5,27 +5,23 @@ from typing import Protocol
 
 from jinja2 import Template
 
-from table2tex.positioning import PositioningTableEnv
 
-
-class _CfgWithNeededAttr(Protocol):
+class _Cfg(Protocol):
     show_info: bool
     version: str
     source_file: Path
 
 
+class _Env(Protocol):
+    def __str__(self) -> str:
+        ...
+
+
 @dataclass()
 class SuperiorEnv:
-    cfg: _CfgWithNeededAttr
-    pos_env: PositioningTableEnv
+    cfg: _Cfg
+    pos_env: _Env
     template: Template
-
-    @property
-    def source_file_mtime(self) -> str:
-        as_float = self.cfg.source_file.stat().st_mtime
-        as_utc = datetime.fromtimestamp(as_float, tz=timezone.utc)
-        as_local = as_utc.astimezone()
-        return as_local.isoformat()
 
     def __str__(self) -> str:
         as_float = self.cfg.source_file.stat().st_mtime

@@ -10,12 +10,19 @@ from jinja2 import PackageLoader, StrictUndefined
 from pydantic import Field
 
 from table2tex import __version__
-from table2tex.data import CellConfig, ColConfig, DataEnv, RowConfig
+from table2tex.data import DataEnv
 from table2tex.io import read
-from table2tex.model import StrictModel
-from table2tex.positioning import PositioningConfig, PositioningTableEnv
+from table2tex.configs import (
+    CellConfig,
+    ColConfig,
+    PositioningConfig,
+    RowConfig,
+    StrictModel,
+    TableConfig,
+)
+from table2tex.positioning import PositioningTableEnv
 from table2tex.superior import SuperiorEnv
-from table2tex.table import TableConfig, TableTabularEnv
+from table2tex.table import TableTabularEnv
 
 
 class GlobalConfig(StrictModel):
@@ -105,7 +112,6 @@ def main(
         }
     )
 
-    print(cfg.cell)
     # Check data and config coherence
     check_coherence(cfg, data)
 

@@ -1,23 +1,25 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Protocol
 
 from jinja2 import Template
 
-from table2tex.table import TableTabularEnv
 
-
-@dataclass()
-class PositioningConfig:
+class _Cfg(Protocol):
     position: str
-    caption: Optional[str] = None
-    label: Optional[str] = None
-    centering: Optional[bool] = None
+    caption: Optional[str]
+    label: Optional[str]
+    centering: Optional[bool]
+
+
+class _Env(Protocol):
+    def __str__(self) -> str:
+        ...
 
 
 @dataclass()
 class PositioningTableEnv:
-    cfg: PositioningConfig
-    table_env: TableTabularEnv
+    cfg: _Cfg
+    table_env: _Env
     template: Template
 
     def __str__(self) -> str:
