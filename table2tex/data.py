@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Mapping, Optional, Protocol
+from typing import Mapping, Protocol
 
 import pandas as pd
 
@@ -7,23 +7,23 @@ from table2tex.mask import build_hline_mask, build_textbf_mask
 
 
 class _CellCfg(Protocol):
-    textbf: Optional[bool]
+    textbf: int
 
 
 class _RowCfg(Protocol):
-    hline_above: Optional[bool]
-    hline_below: Optional[bool]
-    toprule_above: Optional[bool]
-    toprule_below: Optional[bool]
-    midrule_above: Optional[bool]
-    midrule_below: Optional[bool]
-    bottomrule_above: Optional[bool]
-    bottomrule_below: Optional[bool]
-    textbf: Optional[bool]
+    textbf: int
+    hline_above: int
+    hline_below: int
+    # toprule_above: int
+    # toprule_below: int
+    # midrule_above: int
+    # midrule_below: int
+    # bottomrule_above: int
+    # bottomrule_below: int
 
 
 class _ColCfg(Protocol):
-    textbf: Optional[bool]
+    textbf: int
 
 
 @dataclass(kw_only=True)
@@ -43,12 +43,12 @@ class DataEnv:
             self.row_cfgs,
             self.col_cfgs,
         )
-        self._data[mask] = self._data.map(lambda s: f"\\textbf{{{s}}}")
+        self._data[mask == 1] = self._data.map(lambda s: f"\\textbf{{{s}}}")
 
     def _apply_hline(self) -> None:
         before_mask, after_mask = build_hline_mask(self._data.shape, self.row_cfgs)
-        self._row_prefixes[before_mask] += "\\hline\n"
-        self._row_suffixes[after_mask] += " \\hline"
+        self._row_prefixes[before_mask == 1] += "\\hline\n"
+        self._row_suffixes[after_mask == 1] += " \\hline"
 
     def _finalize(self) -> None:
         self._row_suffixes[0 : self._data.shape[0] - 1] += "\n"

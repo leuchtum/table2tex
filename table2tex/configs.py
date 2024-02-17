@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from table2tex import __version__
+
+Ternary = Annotated[int, Field(..., ge=-1, le=1)]
 
 
 class StrictModel(BaseModel):
@@ -12,23 +14,23 @@ class StrictModel(BaseModel):
 
 
 class CellConfig(StrictModel):
-    textbf: Optional[bool] = None
+    textbf: Ternary = -1
 
 
 class ColConfig(StrictModel):
-    textbf: Optional[bool] = None
+    textbf: Ternary = -1
 
 
 class RowConfig(StrictModel):
-    hline_above: Optional[bool] = None
-    hline_below: Optional[bool] = None
-    toprule_above: Optional[bool] = None
-    toprule_below: Optional[bool] = None
-    midrule_above: Optional[bool] = None
-    midrule_below: Optional[bool] = None
-    bottomrule_above: Optional[bool] = None
-    bottomrule_below: Optional[bool] = None
-    textbf: Optional[bool] = None
+    textbf: Ternary = -1
+    hline_above: Ternary = -1
+    hline_below: Ternary = -1
+    # toprule_above: Ternary = -1
+    # toprule_below: Ternary = -1
+    # midrule_above: Ternary = -1
+    # midrule_below: Ternary = -1
+    # bottomrule_above: Ternary = -1
+    # bottomrule_below: Ternary = -1
 
 
 @dataclass()
