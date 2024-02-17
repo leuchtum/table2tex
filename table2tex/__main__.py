@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import Iterable
 
+import click
 import pandas as pd
 from jinja2 import Environment, PackageLoader
 from pydantic import BaseModel, Field
@@ -25,7 +27,13 @@ def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
         raise ValueError("Column layout does not match data shape")
 
 
-def main() -> None:
+@click.command()
+@click.option("--config", type=click.Path(exists=True, path_type=Path), multiple=True)
+@click.argument("path", type=click.Path(exists=True, path_type=Path), nargs=1)
+def main(config: tuple[Path, ...], path: Path) -> None:
+    if config:
+        raise NotImplementedError("Config files not yet supported")
+
     cfg_from_file, data = read(path)
 
     cfg = GlobalConfig.model_validate(cfg_from_file)
