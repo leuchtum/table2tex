@@ -3,15 +3,15 @@ from typing import Optional
 
 from jinja2 import Template
 
-from table2tex.model import StrictModel
 from table2tex.table import TableTabularEnv
 
 
-class PositioningConfig(StrictModel):
+@dataclass()
+class PositioningConfig:
+    position: str
     caption: Optional[str] = None
     label: Optional[str] = None
     centering: Optional[bool] = None
-    position: str = "htbp"
 
 
 @dataclass()

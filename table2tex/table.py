@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from jinja2 import Template
 
 from table2tex.data import DataEnv
-from table2tex.model import StrictModel
 
 
-class TableConfig(StrictModel):
-    columnlayout: str = ""
+@dataclass()
+class TableConfig:
+    columnlayout: str
 
 
 @dataclass()

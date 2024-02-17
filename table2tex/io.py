@@ -8,12 +8,19 @@ def _read_csv(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
     return {}, pd.read_csv(path, header=None, dtype=str)
 
 
-def _parse_cfg_sheet(cfg_sheet: pd.DataFrame) -> dict[str, str]:
-    if cfg_sheet.shape[1] != 2:
+def _parse_cfg_sheet(cfg_sheet: pd.DataFrame | None) -> dict[str, str]:
+    if cfg_sheet is None:
+        return {}
+    cfg_sheet = cfg_sheet.dropna(how="all")
+    if cfg_sheet.shape[1] != 2 or cfg_sheet.isna().any().any():
         raise ValueError("Invalid configuration sheet")
     cfg_string = "\n".join(["=".join(row) for _, row in cfg_sheet.iterrows()])
     cfg = tomllib.loads(cfg_string)
     return cfg
+
+
+def _parse_data_sheet(data_sheet: pd.DataFrame) -> pd.DataFrame:
+    return data_sheet.fillna("")
 
 
 def _read_xlsx(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
@@ -23,10 +30,8 @@ def _read_xlsx(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
     if len(sheets) > 1:
         raise ValueError("Multiple sheets not supported")
 
-    data = list(sheets.values())[0]
-    data = data.fillna("")
-    cfg = {} if cfg_sheet is None else _parse_cfg_sheet(cfg_sheet)
-    return cfg, data
+    data_sheet = list(sheets.values())[0]
+    return _parse_cfg_sheet(cfg_sheet), _parse_data_sheet(data_sheet)
 
 
 def read(path: Path) -> tuple[dict[str, str], pd.DataFrame]:

@@ -1,13 +1,13 @@
 import sys
 from itertools import product
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Optional
 
 import click
 import pandas as pd
 from jinja2 import Environment as JinjaEnv
 from jinja2 import PackageLoader, StrictUndefined
-from pydantic import BeforeValidator, Field
+from pydantic import Field
 
 from table2tex import __version__
 from table2tex.data import CellConfig, ColConfig, DataEnv, RowConfig
@@ -18,29 +18,48 @@ from table2tex.superior import SuperiorEnv
 from table2tex.table import TableConfig, TableTabularEnv
 
 
-def _cell_repack(cells: dict[Any, dict[Any, Any]]) -> dict[tuple[Any, Any], Any]:
-    return {(i, j): cell for i, inner in cells.items() for j, cell in inner.items()}
-
-
 class GlobalConfig(StrictModel):
     # Set automatically
-    source_file: Path
     version: str = __version__
+    # Non user defined
+    source_file: Path
     # User defined
-    show_info: bool = True
+    columnlayout: str
+    position: str = "htbp"
     row: dict[int, RowConfig] = Field(default_factory=dict)
     col: dict[int, ColConfig] = Field(default_factory=dict)
-    cell: Annotated[
-        dict[tuple[int, int], CellConfig],
-        BeforeValidator(_cell_repack),
-    ] = Field(default_factory=dict)
-    table: PositioningConfig = Field(default_factory=lambda: PositioningConfig())
-    tabular: TableConfig = Field(default_factory=lambda: TableConfig())
+    cell: dict[int, dict[int, CellConfig]] = Field(default_factory=dict)
+    caption: Optional[str] = None
+    label: Optional[str] = None
+    centering: Optional[bool] = None
+    show_info: bool = True
+
+    def produce_table_cfg(self) -> TableConfig:
+        return TableConfig(columnlayout=self.columnlayout)
+
+    def produce_positioning_cfg(self) -> PositioningConfig:
+        return PositioningConfig(
+            caption=self.caption,
+            label=self.label,
+            centering=self.centering,
+            position=self.position,
+        )
+
+    def produce_row_cfgs(self) -> dict[int, RowConfig]:
+        return self.row
+
+    def produce_col_cfgs(self) -> dict[int, ColConfig]:
+        return self.col
+
+    def produce_cell_cfgs(self) -> dict[tuple[int, int], CellConfig]:
+        return {
+            (i, j): cell for i, inner in self.cell.items() for j, cell in inner.items()
+        }
 
 
 def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
     # Check if the number of rows in the config matches the data
-    if len(cfg.tabular.columnlayout.replace("|", "")) != data.shape[1]:
+    if len(cfg.columnlayout.replace("|", "")) != data.shape[1]:
         raise ValueError("Column layout does not match data shape")
 
     # Check if rows specified in the config are in the data
@@ -53,7 +72,7 @@ def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
 
     # Check if cells specified in the config are in the data
     possible = product(range(data.shape[0]), range(data.shape[1]))
-    if set(cfg.cell.keys()) - set(possible):
+    if set(cfg.produce_cell_cfgs().keys()) - set(possible):
         raise ValueError("Cells specified in config not in data")
 
 
@@ -98,20 +117,20 @@ def main(
     )
 
     data_env = DataEnv(
-        cell_cfgs=cfg.cell,
-        row_cfgs=cfg.row,
-        col_cfgs=cfg.col,
+        cell_cfgs=cfg.produce_cell_cfgs(),
+        row_cfgs=cfg.produce_row_cfgs(),
+        col_cfgs=cfg.produce_col_cfgs(),
         data=data,
     )
 
-    table_template = templates.get_template("table_tabular.txt")
-    table_env = TableTabularEnv(cfg.tabular, data_env, table_template)
+    table_tpl = templates.get_template("table_tabular.txt")
+    table_env = TableTabularEnv(cfg.produce_table_cfg(), data_env, table_tpl)
 
-    pos_template = templates.get_template("positioning_table.txt")
-    pos_env = PositioningTableEnv(cfg.table, table_env, pos_template)
+    pos_tpl = templates.get_template("positioning_table.txt")
+    pos_env = PositioningTableEnv(cfg.produce_positioning_cfg(), table_env, pos_tpl)
 
-    superior_template = templates.get_template("superior.txt")
-    superior_env = SuperiorEnv(cfg, pos_env, superior_template)
+    superior_tpl = templates.get_template("superior.txt")
+    superior_env = SuperiorEnv(cfg, pos_env, superior_tpl)
 
     parsed = str(superior_env)
     print(parsed)
