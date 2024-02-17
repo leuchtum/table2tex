@@ -23,6 +23,7 @@ def _read_xlsx(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
         raise ValueError("Multiple sheets not supported")
 
     data = list(sheets.values())[0]
+    data = data.fillna("")
     cfg = {} if cfg_sheet is None else _parse_cfg_sheet(cfg_sheet)
     return cfg, data
 

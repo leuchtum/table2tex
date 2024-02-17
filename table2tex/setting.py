@@ -3,8 +3,11 @@ from typing import Annotated
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
 
-def _parse_indices(indices: str) -> list[str]:
-    return indices.split(" ")
+def _parse_indices(indices: str | list[str]) -> list[str]:
+    if isinstance(indices, list):
+        return indices
+    indices = indices.replace(" ", ",")
+    return indices.split(",")
 
 
 IndexList = Annotated[list[int], BeforeValidator(_parse_indices)]

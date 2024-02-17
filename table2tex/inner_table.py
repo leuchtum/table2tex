@@ -7,7 +7,7 @@ from table2tex.data import DataEnvironment
 
 
 class _Config(Protocol):
-    collayout: str = ""
+    columnlayout: str = ""
 
 
 @dataclass()
