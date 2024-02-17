@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
 from jinja2 import Template
-from pydantic import BaseModel
 
 from table2tex.data import DataEnv
+from table2tex.model import StrictModel
 
 
-class TableConfig(BaseModel):
+class TableConfig(StrictModel):
     columnlayout: str = ""
 
 

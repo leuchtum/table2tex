@@ -26,7 +26,6 @@ def _read_xlsx(path: Path) -> tuple[dict[str, str], pd.DataFrame]:
     data = list(sheets.values())[0]
     data = data.fillna("")
     cfg = {} if cfg_sheet is None else _parse_cfg_sheet(cfg_sheet)
-    cfg["source_file"] = str(path)
     return cfg, data
 
 

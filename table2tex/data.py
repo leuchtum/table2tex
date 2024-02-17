@@ -5,14 +5,15 @@ from typing import Mapping, Optional, Protocol
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-from pydantic import BaseModel
+
+from table2tex.model import StrictModel
 
 
-class CellConfig(BaseModel):
+class CellConfig(StrictModel):
     textbf: Optional[bool] = None
 
 
-class RowConfig(BaseModel):
+class RowConfig(StrictModel):
     hline_above: Optional[bool] = None
     hline_below: Optional[bool] = None
     toprule_above: Optional[bool] = None
@@ -24,7 +25,7 @@ class RowConfig(BaseModel):
     textbf: Optional[bool] = None
 
 
-class ColConfig(BaseModel):
+class ColConfig(StrictModel):
     textbf: Optional[bool] = None
 
 
@@ -81,8 +82,8 @@ class DataEnv:
     row_cfgs: dict[int, RowConfig] = field(default_factory=dict)
     col_cfgs: dict[int, ColConfig] = field(default_factory=dict)
     data: pd.DataFrame
-    _row_prefixes: pd.Series = field(init=False)
-    _row_suffixes: pd.Series = field(init=False)
+    _row_prefixes: "pd.Series[str]" = field(init=False)
+    _row_suffixes: "pd.Series[str]" = field(init=False)
     _data: pd.DataFrame = field(init=False)
 
     def _apply_textbf(self) -> None:
@@ -113,7 +114,7 @@ class DataEnv:
         merged = pd.concat(
             [self._row_prefixes, *to_be_concat, self._row_suffixes], axis=1
         )
-        return merged.sum(axis=1).sum()
+        return merged.sum(axis=1).sum()  # type: ignore
 
     def _reset(self) -> None:
         self._row_prefixes = pd.Series([""] * self.data.shape[0])

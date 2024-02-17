@@ -1,22 +1,28 @@
 import sys
+from itertools import product
 from pathlib import Path
+from typing import Annotated, Any
 
 import click
 import pandas as pd
-from jinja2 import Environment, PackageLoader, StrictUndefined
-from pydantic import BaseModel, Field
+from jinja2 import Environment as JinjaEnv
+from jinja2 import PackageLoader, StrictUndefined
+from pydantic import BeforeValidator, Field
 
 from table2tex import __version__
 from table2tex.data import CellConfig, ColConfig, DataEnv, RowConfig
 from table2tex.io import read
+from table2tex.model import StrictModel
 from table2tex.positioning import PositioningConfig, PositioningTableEnv
 from table2tex.superior import SuperiorEnv
 from table2tex.table import TableConfig, TableTabularEnv
 
-path = Path("data.xlsx")
+
+def _cell_repack(cells: dict[Any, dict[Any, Any]]) -> dict[tuple[Any, Any], Any]:
+    return {(i, j): cell for i, inner in cells.items() for j, cell in inner.items()}
 
 
-class GlobalConfig(BaseModel):
+class GlobalConfig(StrictModel):
     # Set automatically
     source_file: Path
     version: str = __version__
@@ -24,14 +30,31 @@ class GlobalConfig(BaseModel):
     show_info: bool = True
     row: dict[int, RowConfig] = Field(default_factory=dict)
     col: dict[int, ColConfig] = Field(default_factory=dict)
-    cell: dict[tuple[int, int], CellConfig] = Field(default_factory=dict)
+    cell: Annotated[
+        dict[tuple[int, int], CellConfig],
+        BeforeValidator(_cell_repack),
+    ] = Field(default_factory=dict)
     table: PositioningConfig = Field(default_factory=lambda: PositioningConfig())
     tabular: TableConfig = Field(default_factory=lambda: TableConfig())
 
 
 def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
+    # Check if the number of rows in the config matches the data
     if len(cfg.tabular.columnlayout.replace("|", "")) != data.shape[1]:
         raise ValueError("Column layout does not match data shape")
+
+    # Check if rows specified in the config are in the data
+    if set(cfg.row.keys()) - set(range(data.shape[0])):
+        raise ValueError("Rows specified in config not in data")
+
+    # Check if columns specified in the config are in the data
+    if set(cfg.col.keys()) - set(range(data.shape[1])):
+        raise ValueError("Columns specified in config not in data")
+
+    # Check if cells specified in the config are in the data
+    possible = product(range(data.shape[0]), range(data.shape[1]))
+    if set(cfg.cell.keys()) - set(possible):
+        raise ValueError("Cells specified in config not in data")
 
 
 @click.command()
@@ -51,11 +74,23 @@ def main(
     cfg_from_file: dict[str, str],
     data: pd.DataFrame,
 ) -> None:
-    cfg = GlobalConfig.model_validate(cfg_from_file)
+    # Combine configs
+    cfg_dict = cfg_from_file
+    # TODO...
 
+    # Create GlobalConfig
+    cfg = GlobalConfig.model_validate(
+        {
+            **cfg_dict,
+            "source_file": source_file,
+        }
+    )
+
+    print(cfg.cell)
+    # Check data and config coherence
     check_coherence(cfg, data)
 
-    templates = Environment(
+    templates = JinjaEnv(
         loader=PackageLoader("table2tex"),
         trim_blocks=True,
         lstrip_blocks=True,

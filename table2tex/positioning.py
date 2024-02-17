@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from typing import Optional
 
 from jinja2 import Template
-from pydantic import BaseModel
 
+from table2tex.model import StrictModel
 from table2tex.table import TableTabularEnv
 
 
-class PositioningConfig(BaseModel):
+class PositioningConfig(StrictModel):
     caption: Optional[str] = None
     label: Optional[str] = None
     centering: Optional[bool] = None
@@ -20,5 +20,5 @@ class PositioningTableEnv:
     table_env: TableTabularEnv
     template: Template
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.template.render(**self.__dict__)
