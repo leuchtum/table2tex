@@ -1,4 +1,7 @@
 \begin{table}[{{ cfg.position or '' }}]
+{% if cfg.label %}
+\label{ {{-cfg.label-}} }
+{% endif %}
 {% if cfg.centering %}
 \centering
 {% endif %}

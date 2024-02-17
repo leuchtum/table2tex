@@ -9,6 +9,7 @@ from table2tex.inner_table import TabularEnvironment
 
 class TableConfig(BaseModel):
     caption: Optional[str] = None
+    label: Optional[str] = None
     centering: Optional[bool] = None
     position: str = "htbp"
 
