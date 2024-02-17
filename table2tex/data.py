@@ -38,12 +38,13 @@ def _build_textbf_mask(
     col_cfgs: Mapping[int, _HasTextBfAttr],
 ) -> npt.NDArray[np.bool_]:
     mask = np.zeros(shape=shape, dtype=bool)
-    for i, j in product(range(shape[0]), range(shape[1])):
+    N, M = shape
+    for i, j in product(range(-N, N), range(-M, M)):
         cell_cfg = cell_cfgs.get((i, j))
         row_cfg = row_cfgs.get(i)
         col_cfg = col_cfgs.get(j)
 
-        val = False
+        val = None
 
         if col_cfg is not None and col_cfg.textbf is not None:
             val = col_cfg.textbf
@@ -52,7 +53,9 @@ def _build_textbf_mask(
         if cell_cfg is not None and cell_cfg.textbf is not None:
             val = cell_cfg.textbf
 
-        mask[i, j] = val
+        if val is not None:
+            mask[i, j] = val
+
     return mask
 
 
@@ -65,9 +68,10 @@ def _build_hline_mask(
     shape: tuple[int, int],
     row_cfgs: Mapping[int, _HasHLineAttr],
 ) -> tuple[npt.NDArray[np.bool_], npt.NDArray[np.bool_]]:
-    before_mask = np.zeros(shape[0], dtype=bool)
-    after_mask = np.zeros(shape[0], dtype=bool)
-    for i in range(shape[0]):
+    N = shape[0]
+    before_mask = np.zeros(N, dtype=bool)
+    after_mask = np.zeros(N, dtype=bool)
+    for i in range(-N, N):
         row_cfg = row_cfgs.get(i)
         if row_cfg is None:
             continue

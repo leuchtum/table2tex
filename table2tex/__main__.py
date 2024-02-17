@@ -21,17 +21,21 @@ def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
     if len(cfg.columnlayout.replace("|", "")) != data.shape[1]:
         raise ValueError("Column layout does not match data shape")
 
+    # Possibilities
+    row_possibilities = range(-data.shape[0], data.shape[0])
+    col_possibilities = range(-data.shape[1], data.shape[1])
+    cell_possibilities = product(row_possibilities, col_possibilities)
+
     # Check if rows specified in the config are in the data
-    if set(cfg.row.keys()) - set(range(data.shape[0])):
+    if set(cfg.produce_row_cfgs().keys()) - set(row_possibilities):
         raise ValueError("Rows specified in config not in data")
 
     # Check if columns specified in the config are in the data
-    if set(cfg.col.keys()) - set(range(data.shape[1])):
+    if set(cfg.produce_col_cfgs().keys()) - set(col_possibilities):
         raise ValueError("Columns specified in config not in data")
 
     # Check if cells specified in the config are in the data
-    possible = product(range(data.shape[0]), range(data.shape[1]))
-    if set(cfg.produce_cell_cfgs().keys()) - set(possible):
+    if set(cfg.produce_cell_cfgs().keys()) - set(cell_possibilities):
         raise ValueError("Cells specified in config not in data")
 
 
