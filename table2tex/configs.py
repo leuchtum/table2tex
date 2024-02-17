@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from table2tex import __version__
+from table2tex.version import VERSION
 
 Ternary = Annotated[int, Field(..., ge=-1, le=1)]
 
@@ -48,7 +48,7 @@ class TableConfig:
 
 class GlobalConfig(StrictModel):
     # Non user defined
-    version: str = __version__
+    version: str = VERSION
     sources: list[Path] = Field(default_factory=dict)
     # User defined
     columnlayout: str = ""

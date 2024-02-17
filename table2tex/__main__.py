@@ -14,6 +14,7 @@ from table2tex.io import read_config, read_data
 from table2tex.positioning import PositioningTableEnv
 from table2tex.superior import SuperiorEnv
 from table2tex.table import TableTabularEnv
+from table2tex.version import VERSION
 
 
 def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
@@ -40,7 +41,7 @@ def check_coherence(cfg: GlobalConfig, data: pd.DataFrame) -> None:
 
 
 @click.command()
-@click.version_option(prog_name="table2tex")
+@click.version_option(prog_name="Table2Tex", version=VERSION)
 @click.option(
     "--to-stdout",
     is_flag=True,
